@@ -1,14 +1,14 @@
 <?php
 
-namespace T9AdminPro\Core;
+namespace T9Suite\Core;
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
-class T9Admin_Nonce_Handler {
+class T9Suite_Nonce_Handler {
 
-    /**Invalid POST request. Nonce verification failed.
+    /**
      * Tạo nonce.
      *
      * @param string $action Tên hành động (unique).
@@ -27,7 +27,7 @@ class T9Admin_Nonce_Handler {
         $nonce = sanitize_text_field(wp_unslash($_POST['_wpnonce'] ?? ''));
 
         if (empty($nonce) || !wp_verify_nonce($nonce, $action)) {
-            wp_die(esc_html__('Invalid POST request. Nonce verification failed.', 't9admin-pro'));
+            wp_die(esc_html__('Invalid POST request. Nonce verification failed.', 't9suite'));
         }
     }
 
@@ -40,11 +40,11 @@ class T9Admin_Nonce_Handler {
         $nonce = sanitize_text_field(wp_unslash($_GET['_wpnonce'] ?? ''));
 
         if (empty($nonce)) {
-            wp_die(esc_html__('Nonce missing for GET request.', 't9admin-pro'));
+            wp_die(esc_html__('Nonce missing for GET request.', 't9suite'));
         }
 
         if (!wp_verify_nonce($nonce, $action)) {
-            wp_die(esc_html__('Invalid GET request. Nonce verification failed.', 't9admin-pro'));
+            wp_die(esc_html__('Invalid GET request. Nonce verification failed.', 't9suite'));
         }
     }
 }

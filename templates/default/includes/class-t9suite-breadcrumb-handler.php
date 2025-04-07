@@ -1,17 +1,20 @@
 <?php
 
-if (!defined('ABSPATH')) exit; // Exit if accessed directly
+if (!defined('ABSPATH')) exit;
 
-class T9AdminProBreadcrumbHandler {
+class T9SuiteBreadcrumbHandler {
 
     /**
-     * Render the breadcrumb
+     * Render the breadcrumb trail.
+     *
+     * @param string $post_type
+     * @param string $action
      */
-    public function t9admin_pro_render_breadcrumb($post_type, $action) {
+    public function render_breadcrumb($post_type, $action) {
         $breadcrumb = [
             [
-                'label' => esc_html__('Dashboard', 't9admin-pro'),
-                'url'   => esc_url(home_url('/t9admin/')),
+                'label' => esc_html__('Dashboard', 't9suite'),
+                'url'   => esc_url(home_url('/t9suite/')),
                 'active' => false,
             ],
         ];
@@ -19,33 +22,35 @@ class T9AdminProBreadcrumbHandler {
         if ($post_type && post_type_exists($post_type)) {
             $post_type_obj = get_post_type_object($post_type);
             $breadcrumb[] = [
-                'label' => sprintf(esc_html__('Manage %s', 't9admin-pro'), $post_type_obj->label),
-                'url'   => esc_url(home_url('/t9admin/?page=' . $post_type)),
+                'label' => sprintf(esc_html__('Manage %s', 't9suite'), $post_type_obj->label),
+                'url'   => esc_url(home_url('/t9suite/?page=' . $post_type)),
                 'active' => ($action === 'manage'),
             ];
 
             if ($action === 'post-type-create') {
                 $breadcrumb[] = [
-                    'label' => sprintf(esc_html__('Create New %s', 't9admin-pro'), $post_type_obj->label),
+                    'label' => sprintf(esc_html__('Create New %s', 't9suite'), $post_type_obj->label),
                     'url'   => '',
                     'active' => true,
                 ];
             } elseif ($action === 'edit') {
                 $breadcrumb[] = [
-                    'label' => esc_html__('Edit', 't9admin-pro'),
+                    'label' => esc_html__('Edit', 't9suite'),
                     'url'   => '',
                     'active' => true,
                 ];
             }
         }
 
-        $this->t9admin_pro_render_breadcrumb_html($breadcrumb);
+        $this->render_breadcrumb_html($breadcrumb);
     }
 
     /**
-     * Generate the breadcrumb HTML
+     * Render breadcrumb HTML.
+     *
+     * @param array $breadcrumb
      */
-    private function t9admin_pro_render_breadcrumb_html($breadcrumb) {
+    private function render_breadcrumb_html($breadcrumb) {
         ?>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb">

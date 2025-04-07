@@ -1,12 +1,12 @@
 <?php
 
-namespace T9AdminPro\Forms;
+namespace T9Suite\Forms;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class T9Admin_Profile_Form {
+class T9Suite_Profile_Form {
 
     public static function register() {
         add_action('init', [__CLASS__, 'handleProfileUpdate']);
@@ -16,8 +16,10 @@ class T9Admin_Profile_Form {
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
 
             // Kiểm tra nonce
-            if (!isset($_POST['t9admin_pro_profile_nonce']) || 
-                !wp_verify_nonce($_POST['t9admin_pro_profile_nonce'], 't9admin_pro_update_profile')) {
+            if (
+                !isset($_POST['t9suite_profile_nonce']) || 
+                !wp_verify_nonce($_POST['t9suite_profile_nonce'], 't9suite_update_profile')
+            ) {
                 wp_redirect(add_query_arg('status', 'error', get_permalink()));
                 exit;
             }
@@ -30,14 +32,14 @@ class T9Admin_Profile_Form {
 
             // Lấy dữ liệu và sanitize
             $first_name = sanitize_text_field($_POST['first_name'] ?? '');
-            $last_name = sanitize_text_field($_POST['last_name'] ?? '');
-            $phone = sanitize_text_field($_POST['phone'] ?? '');
+            $last_name  = sanitize_text_field($_POST['last_name'] ?? '');
+            $phone      = sanitize_text_field($_POST['phone'] ?? '');
 
             // Cập nhật thông tin cá nhân
             $updated = wp_update_user([
-                'ID' => $user_id,
+                'ID'         => $user_id,
                 'first_name' => $first_name,
-                'last_name' => $last_name,
+                'last_name'  => $last_name,
             ]);
 
             update_user_meta($user_id, 'phone', $phone);
@@ -47,11 +49,11 @@ class T9Admin_Profile_Form {
                 exit;
             }
 
-            // Kiểm tra và xử lý upload avatar nếu có
+            // Upload avatar nếu có
             if (!empty($_FILES['avatar']['name'])) {
                 require_once ABSPATH . 'wp-admin/includes/file.php';
 
-                $file = $_FILES['avatar'];
+                $file   = $_FILES['avatar'];
                 $upload = wp_handle_upload($file, ['test_form' => false]);
 
                 if (isset($upload['error'])) {

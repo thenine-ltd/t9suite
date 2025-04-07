@@ -2,14 +2,14 @@
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-class T9AdminProGreetingsHandler {
+class T9SuiteGreetingsHandler {
 
     /**
      * Render the greeting message
      *
      * @param string $display_name User's display name
      */
-    public static function t9admin_pro_render_greeting($display_name) {
+    public static function t9suite_render_greeting($display_name) {
         $current_hour = current_time('H'); // Get current hour based on WordPress timezone
         
         // Determine greeting based on time of day

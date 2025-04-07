@@ -1,5 +1,5 @@
 jQuery(document).ready(function ($) {
-    $('.t9admin-pro-upload-button').click(function (e) {
+    $('.t9suite-upload-button').click(function (e) {
         e.preventDefault();
 
         var button = $(this);
@@ -31,13 +31,13 @@ jQuery(document).ready(function ($) {
         mediaUploader.open();
     });
 
-    $('.t9admin-pro-font-select').select2({
+    $('.t9suite-font-select').select2({
         width: '100%',
         placeholder: 'Search for a font...',
         allowClear: true
     });
 
-    $('.t9admin-pro-darkmode-toggle').on('change', function () {
+    $('.t9suite-darkmode-toggle').on('change', function () {
         if ($(this).is(':checked')) {
             $('body').addClass('dark-mode');
         } else {

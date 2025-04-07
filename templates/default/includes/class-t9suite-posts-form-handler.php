@@ -2,17 +2,19 @@
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'templates/default/includes/class-t9admin-pro-taxonomy-handler.php';
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'templates/default/includes/class-t9admin-pro-tags-handler.php';
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'templates/default/includes/class-t9admin-pro-upload-handler.php';
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'includes/Modules/Ticket/TicketForm.php'; 
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'includes/Modules/Hrm/StaffsForm.php'; 
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'includes/Modules/Crm/CustomersForm.php'; 
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'includes/Modules/Epatrol/SitesForm.php'; 
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'includes/Modules/Epatrol/CheckpointsForm.php'; 
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'includes/Modules/Epatrol/ToursForm.php'; 
+require_once T9SUITE_PLUGIN_DIR . 'templates/default/includes/class-t9suite-taxonomy-handler.php';
+require_once T9SUITE_PLUGIN_DIR . 'templates/default/includes/class-t9suite-tags-handler.php';
+require_once T9SUITE_PLUGIN_DIR . 'templates/default/includes/class-t9suite-upload-handler.php';
 
-class T9AdminProPostsFormHandler {
+require_once T9SUITE_PLUGIN_DIR . 'includes/Modules/Ticket/TicketForm.php';
+require_once T9SUITE_PLUGIN_DIR . 'includes/Modules/Hrm/StaffsForm.php';
+require_once T9SUITE_PLUGIN_DIR . 'includes/Modules/Crm/CustomersForm.php';
+require_once T9SUITE_PLUGIN_DIR . 'includes/Modules/Epatrol/SitesForm.php';
+require_once T9SUITE_PLUGIN_DIR . 'includes/Modules/Epatrol/CheckpointsForm.php';
+require_once T9SUITE_PLUGIN_DIR . 'includes/Modules/Epatrol/ToursForm.php';
+
+
+class T9SuitePostsFormHandler {
 
     private $post_type;
     private $taxonomy_handler;
@@ -29,7 +31,7 @@ class T9AdminProPostsFormHandler {
     /**
      * Render the form
      */
-    public function t9admin_pro_render_form() {
+    public function render_form() {
     $post_id = isset($_GET['post_id']) ? absint($_GET['post_id']) : 0;
     $post = $post_id ? get_post($post_id) : null;
 
@@ -244,7 +246,7 @@ private function render_acf_field($field, $post_id) {
     /**
      * Handle form submission
      */
-    public function t9admin_pro_handle_form_submission() {
+    public function t9suite_handle_form_submission() {
     
         $post_type = sanitize_text_field($_POST['post_type']);
     

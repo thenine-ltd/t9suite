@@ -1,8 +1,8 @@
 <?php
 
-if (!defined('ABSPATH')) exit; // Exit if accessed directly
+if (!defined('ABSPATH')) exit;
 
-class T9AdminProPaginationHandler {
+class T9SuitePaginationHandler {
 
     private $query_args;
     private $paged;
@@ -15,35 +15,34 @@ class T9AdminProPaginationHandler {
     /**
      * Render pagination and total posts
      */
-    public function t9admin_pro_render_pagination_and_total($query) {
-        // Total posts calculation
+    public function render_pagination_and_total($query) {
+        // Total posts
         $count_query = new WP_Query(array_merge($this->query_args, [
             'posts_per_page' => -1,
             'fields'         => 'ids',
         ]));
         $total_posts = $count_query->found_posts;
 
-
         echo '<div class="d-flex align-items-stretch justify-content-between">';
-            $this->t9admin_pro_render_pagination($query);
+            $this->render_pagination($query);
             echo '<div class="text-end mt-2">';
-            printf(esc_html__('Total: %d', 't9admin-pro'), intval($total_posts));
+            printf(esc_html__('Total: %d', 't9suite'), intval($total_posts));
             echo '</div>';
         echo '</div>';
     }
 
     /**
-     * Render pagination
+     * Render pagination HTML
      */
-    private function t9admin_pro_render_pagination($query) {
+    private function render_pagination($query) {
         $pagination = paginate_links([
             'base'      => add_query_arg(array_merge($_GET, ['paged' => '%#%'])),
             'format'    => '',
             'current'   => $this->paged,
             'total'     => $query->max_num_pages,
             'type'      => 'array',
-            'prev_text' => esc_html__('&laquo;', 't9admin-pro'),
-            'next_text' => esc_html__('&raquo;', 't9admin-pro'),
+            'prev_text' => esc_html__('&laquo;', 't9suite'),
+            'next_text' => esc_html__('&raquo;', 't9suite'),
         ]);
 
         if ($pagination) {
