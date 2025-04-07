@@ -7,10 +7,10 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
     $username = $current_user->display_name;
     $email = $current_user->user_email;
     
-    $logoDarkUrl = get_option('t9admin_pro_logo_dark');
-    $logoLightUrl = get_option('t9admin_pro_logo_light');
-    $logoWidth = get_option('t9admin_pro_logo_width', '120'); // Default width if not set
-    $companyName = get_option('t9admin_pro_company_name', esc_html__('Default Team Name', 't9admin-pro'));
+    $logoDarkUrl = get_option('t9suite_logo_dark');
+    $logoLightUrl = get_option('t9suite_logo_light');
+    $logoWidth = get_option('t9suite_logo_width', '120'); // Default width if not set
+    $companyName = get_option('t9suite_company_name', esc_html__('Default Team Name', 't9suite'));
     
     // Lấy thumbnail từ CPT Staffs dựa trên post_author khớp với user_id
     $avatar_url = '';
@@ -313,10 +313,10 @@ if (!defined('ABSPATH')) exit; // Exit if accessed directly
                         </div>
                         <div class="message-body">
                             <a href="<?php echo esc_url(home_url('/' . $custom_route . '/?page=profile')); ?>" class="p-2 dropdown-item h6 rounded-1">
-                                <?php _e('Account Settings', 't9admin-pro'); ?>
+                                <?php _e('Account Settings', 't9suite'); ?>
                             </a>
                             <a href="<?php echo esc_url(home_url('/' . $custom_route . '/?logout=1')); ?>" class="p-2 dropdown-item h6 rounded-1">
-                                <?php _e('Logout', 't9admin-pro'); ?>
+                                <?php _e('Logout', 't9suite'); ?>
                             </a>
                         </div>
                       </div>

@@ -1,6 +1,6 @@
 <?php
 if (!defined('ABSPATH')) exit;
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'templates/default/includes/class-t9admin-pro-greetings-handler.php';
+require_once T9SUITE_PLUGIN_DIR . 'templates/default/includes/class-t9suite-greetings-handler.php';
 
 $current_user = wp_get_current_user();
 $display_name = $current_user->display_name; // Get user display name
@@ -22,8 +22,8 @@ $analytics_data = [
               <div class="card text-white bg-primary-gt overflow-hidden">
                 <div class="card-body position-relative z-1">
                     <?php
-                    if (class_exists('T9AdminProGreetingsHandler')) {
-                        T9AdminProGreetingsHandler::t9admin_pro_render_greeting($display_name);
+                    if (class_exists('T9SuiteGreetingsHandler')) {
+                        T9SuiteGreetingsHandler::t9suite_render_greeting($display_name);
                     }
                     ?>
                 </div>

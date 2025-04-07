@@ -1,38 +1,38 @@
 <?php
 /*
 Plugin Name: T9Suite
-Plugin URI: https://t9suite.thenine.com/
-Description: Pro extension for T9Admin with advanced settings and customization options.
+Plugin URI: https://t9suite.thenine.vn/
+Description: Pro extension for T9Suite with advanced settings and customization options.
 Version: 1.0.0
 Author: The Nine
 Author URI: https://thenine.vn
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: t9admin-pro
+Text Domain: t9suite
 Domain Path: /languages
 Requires at least: 5.8
 Requires PHP: 7.4
 */
 
-namespace T9AdminPro;
+namespace T9Suite;
 
 // Prevent direct access to this file.
 if (!defined('ABSPATH')) {
     exit;
 }
 
-// Define plugin constants with T9ADMIN_PRO prefix globally.
-if (!defined('T9ADMIN_PRO_PLUGIN_DIR')) {
-    define('T9ADMIN_PRO_PLUGIN_DIR', plugin_dir_path(__FILE__));
+// Define plugin constants with T9SUITE prefix globally.
+if (!defined('T9SUITE_PLUGIN_DIR')) {
+    define('T9SUITE_PLUGIN_DIR', plugin_dir_path(__FILE__));
 }
-if (!defined('T9ADMIN_PRO_PLUGIN_URL')) {
-    define('T9ADMIN_PRO_PLUGIN_URL', plugin_dir_url(__FILE__));
+if (!defined('T9SUITE_PLUGIN_URL')) {
+    define('T9SUITE_PLUGIN_URL', plugin_dir_url(__FILE__));
 }
-if (!defined('T9ADMIN_PRO_PLUGIN_FILE')) {
-    define('T9ADMIN_PRO_PLUGIN_FILE', __FILE__);
+if (!defined('T9SUITE_PLUGIN_FILE')) {
+    define('T9SUITE_PLUGIN_FILE', __FILE__);
 }
-if (!defined('T9ADMIN_PRO_VERSION')) {
-    define('T9ADMIN_PRO_VERSION', '1.0.0');
+if (!defined('T9SUITE_VERSION')) {
+    define('T9SUITE_VERSION', '1.0.0');
 }
 
 /**
@@ -54,7 +54,7 @@ class Plugin {
     private static function register_autoloader() {
         spl_autoload_register(function ($class) {
             $prefix   = __NAMESPACE__ . '\\';
-            $base_dir = T9ADMIN_PRO_PLUGIN_DIR . 'includes/';
+            $base_dir = T9SUITE_PLUGIN_DIR . 'includes/';
 
             if (strncmp($prefix, $class, strlen($prefix)) !== 0) {
                 return;
@@ -66,32 +66,34 @@ class Plugin {
             if (file_exists($file)) {
                 require_once $file;
             } elseif (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log("T9Admin Pro: Class file not found - $file");
+                error_log("T9Suite: Class file not found - $file");
             }
         });
     }
 
     /**
      * Check requirements and initialize the plugin core.
+     *
+     * @return bool True if requirements are met, false otherwise.
      */
     public static function initialize() {
         if (!self::check_requirements()) {
             return;
         }
 
-        load_plugin_textdomain('t9admin-pro', false, basename(T9ADMIN_PRO_PLUGIN_DIR) . '/languages/');
-        Core\T9Admin_Init::init();
+        load_plugin_textdomain('t9suite', false, basename(T9SUITE_PLUGIN_DIR) . '/languages/');
+        Core\T9Suite_Init::init();
     }
 
     /**
-     * Check PHP version and optionally T9Admin dependency.
+     * Check PHP version and optionally dependencies.
      *
      * @return bool True if requirements are met, false otherwise.
      */
     private static function check_requirements() {
         if (version_compare(PHP_VERSION, '7.4', '<')) {
             add_action('admin_notices', function () {
-                echo '<div class="error"><p>' . esc_html__('T9Admin Pro requires PHP 7.4 or higher. Current version: ', 't9admin-pro') . PHP_VERSION . '</p></div>';
+                echo '<div class="error"><p>' . esc_html__('T9Suite requires PHP 7.4 or higher. Current version: ', 't9suite') . PHP_VERSION . '</p></div>';
             });
             return false;
         }
@@ -105,7 +107,7 @@ class Plugin {
         if (!current_user_can('activate_plugins')) {
             return;
         }
-        delete_option('t9admin_pro_settings');
+        delete_option('t9suite_settings');
     }
 }
 
@@ -113,4 +115,4 @@ class Plugin {
 Plugin::bootstrap();
 
 // Register uninstall hook.
-register_uninstall_hook(T9ADMIN_PRO_PLUGIN_FILE, [Plugin::class, 'uninstall']);
+register_uninstall_hook(T9SUITE_PLUGIN_FILE, [Plugin::class, 'uninstall']);

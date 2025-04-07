@@ -1,13 +1,13 @@
 <?php
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'templates/default/includes/class-t9admin-pro-branding-handler.php';
-require_once T9ADMIN_PRO_PLUGIN_DIR . 'templates/default/includes/class-t9admin-pro-menu-handler.php';
+require_once T9SUITE_PLUGIN_DIR . 'templates/default/includes/class-t9suite-branding-handler.php';
+require_once T9SUITE_PLUGIN_DIR . 'templates/default/includes/class-t9suite-menu-handler.php';
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 }
 
 // Lấy menu items từ settings
-$menu_items = get_option('t9admin_pro_menu_items', []);
+$menu_items = get_option('t9suite_menu_items', []);
 $mini_nav_items = array_filter($menu_items, function($item) {
     return $item['post_type'] === 'mini-nav';
 });
@@ -57,7 +57,7 @@ foreach ($menu_items as $key => $item) {
                            data-bs-toggle="tooltip" 
                            data-bs-custom-class="custom-tooltip" 
                            data-bs-placement="right" 
-                           data-bs-title="<?php esc_attr_e('Dashboards', 't9admin-pro'); ?>">
+                           data-bs-title="<?php esc_attr_e('Dashboards', 't9suite'); ?>">
                             <iconify-icon icon="solar:layers-line-duotone" class="fs-5"></iconify-icon>
                         </a>
                     </li>
@@ -78,13 +78,13 @@ foreach ($menu_items as $key => $item) {
 
             <!-- Sidebarmenu Wrapper -->
             <div class="sidebarmenu">
-                <?php if (class_exists('T9AdminProBrandingHandler')): ?>
-                    <?php T9AdminProBrandingHandler::t9admin_pro_render_branding(); ?>
+                <?php if (class_exists('T9SuiteBrandingHandler')): ?>
+                    <?php T9SuiteBrandingHandler::render_branding(); ?>
                 <?php endif; ?>
-                <?php if (class_exists('T9AdminProMenuHandler')): ?>
+                <?php if (class_exists('T9SuiteMenuHandler')): ?>
                     <?php
-                    $menu_handler = new T9AdminProMenuHandler();
-                    $menu_handler->t9admin_pro_render_nav_menu($structured_menu);
+                    $menu_handler = new T9SuiteMenuHandler();
+                    $menu_handler->t9suite_render_nav_menu($structured_menu);
                     ?>
                 <?php endif; ?>
             </div>
@@ -194,5 +194,4 @@ document.addEventListener("DOMContentLoaded", function () {
 .mini-nav-item.selected {
     background-color: #f0f0f0;
 }
-
 </style>
