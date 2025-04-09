@@ -249,7 +249,19 @@ class T9Suite_License {
             }
 
             // Lưu activation token
-            $activation_token = $data['activationData']['token'] ?? '';
+            $activation_data = $data['activationData'] ?? [];
+            $activation_token = '';
+
+            // Xử lý cả hai trường hợp: activationData là object hoặc array
+            if (is_array($activation_data)) {
+                // Nếu là array, lấy token từ phần tử cuối cùng (activation mới nhất)
+                $last_activation = end($activation_data);
+                $activation_token = $last_activation['token'] ?? '';
+            } else {
+                // Nếu là object, lấy token trực tiếp
+                $activation_token = $activation_data['token'] ?? '';
+            }
+
             if (!empty($activation_token)) {
                 update_option('t9suite_activation_token', $activation_token);
                 error_log("✅ Activation token saved: {$activation_token}");
