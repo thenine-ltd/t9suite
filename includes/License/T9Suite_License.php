@@ -34,7 +34,7 @@ class T9Suite_License {
 
         $cached = get_transient('t9suite_license_status_data');
         if ($cached && is_array($cached)) {
-            error_log('✅ Using cached license status');
+            error_log('✅ Using cached license status: ' . print_r($cached, true));
             return $cached;
         }
 
@@ -147,7 +147,22 @@ class T9Suite_License {
                 ];
             }
 
-            $url = "https://thenine.vn/wp-json/lmfwc/v2/licenses/deactivate/{$stored_key}";
+            // Lấy token từ option
+            $activation_token = get_option('t9suite_activation_token', '');
+            error_log("🔍 Detach license - Activation token: {$activation_token}");
+
+            if (empty($activation_token)) {
+                error_log('❌ No activation token found for deactivation.');
+                delete_option('t9suite_license_key');
+                delete_transient('t9suite_license_status_data');
+                return [
+                    'status'  => 'detached',
+                    'message' => 'License deactivated locally (no token available).'
+                ];
+            }
+
+            // Gọi API /deactivate với token
+            $url = "https://thenine.vn/wp-json/lmfwc/v2/licenses/deactivate/{$stored_key}?token={$activation_token}";
             $response = wp_remote_get($url, [
                 'headers' => [
                     'Authorization' => $auth_header,
@@ -172,6 +187,7 @@ class T9Suite_License {
                 error_log("🔍 After deactivation, timesActivated: {$times_activated}");
 
                 delete_option('t9suite_license_key');
+                delete_option('t9suite_activation_token');
                 delete_transient('t9suite_license_status_data');
                 return [
                     'status'  => 'detached',
@@ -186,6 +202,7 @@ class T9Suite_License {
         }
 
         // Kiểm tra trạng thái hiện tại trước khi activate
+        delete_transient('t9suite_license_status_data'); // Đảm bảo lấy dữ liệu mới nhất
         $current_status = self::check_license_status();
         error_log("🔍 Before activation, timesActivated: {$current_status['timesActivated']}/{$current_status['timesActivatedMax']}");
 
@@ -229,6 +246,15 @@ class T9Suite_License {
                     'status'  => 'error',
                     'message' => "License has reached maximum activations: {$activated}/{$max}."
                 ];
+            }
+
+            // Lưu activation token
+            $activation_token = $data['activationData']['token'] ?? '';
+            if (!empty($activation_token)) {
+                update_option('t9suite_activation_token', $activation_token);
+                error_log("✅ Activation token saved: {$activation_token}");
+            } else {
+                error_log("❌ No activation token found in response.");
             }
 
             // Lưu license key và kiểm tra xem có lưu thành công không
