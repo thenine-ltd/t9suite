@@ -7,9 +7,6 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-/**
- * Controller xử lý trang License cho T9Suite Settings.
- */
 class License_Settings {
 
     public function register_menu() {
@@ -28,7 +25,7 @@ class License_Settings {
         if (!current_user_can('manage_options')) {
             wp_die(__('You do not have permission to access this page.', 't9suite'));
         }
-    
+
         $active_menu = $_GET['license_tab'] ?? 'license';
         ?>
         <div class="wrap" id="t9-license-wrapper">
@@ -50,7 +47,7 @@ class License_Settings {
                         </li>
                     </ul>
                 </div>
-    
+
                 <!-- Content Area -->
                 <div style="flex: 1;">
                     <?php if ($active_menu === 'license') : ?>
@@ -59,7 +56,7 @@ class License_Settings {
                 </div>
             </div>
         </div>
-    
+
         <style>
             .t9-license-menu {
                 display: block;
@@ -79,29 +76,35 @@ class License_Settings {
     }
 
     private function render_license_cards() {
-        // Handle license form submission
+        // Xử lý submit
         if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
             isset($_POST['t9suite_license_nonce']) &&
             wp_verify_nonce($_POST['t9suite_license_nonce'], 't9suite_save_license')) {
-    
+
             $submitted_key = sanitize_text_field($_POST['license_key'] ?? '');
-            \T9Suite\License\T9Suite_License::save_license($submitted_key);
-    
-            if (empty($submitted_key)) {
-                add_settings_error('t9suite_license', 'license_detached', __('License detached successfully.', 't9suite'), 'updated');
-            } elseif (\T9Suite\License\T9Suite_License::is_license_valid()) {
-                add_settings_error('t9suite_license', 'license_success', __('License activated successfully!', 't9suite'), 'success');
+            $result = \T9Suite\License\T9Suite_License::save_license($submitted_key);
+
+            if ($result['status'] === 'valid') {
+                add_settings_error('t9suite_license', 'license_success', $result['message'], 'success');
+            } elseif ($result['status'] === 'detached') {
+                add_settings_error('t9suite_license', 'license_detached', $result['message'], 'updated');
             } else {
-                add_settings_error('t9suite_license', 'license_invalid', __('Invalid license key or does not match the product.', 't9suite'), 'error');
+                add_settings_error('t9suite_license', 'license_error', $result['message'], 'error');
             }
         }
-    
-        $license_key    = get_option('t9suite_license_key', '');
-        $license_data   = \T9Suite\License\T9Suite_License::check_license_status();
-        $is_valid       = $license_data['status'] === 'valid';
-        $version_status = T9SUITE_VERSION === '3.4.8' ? 'up-to-date' : 'update-required';
-    
-        // Status text
+
+        // Lấy thông tin
+        $license_key = get_option('t9suite_license_key', '');
+        $license_data = \T9Suite\License\T9Suite_License::check_license_status();
+        $is_valid = $license_data['status'] === 'valid';
+        $is_expired = $license_data['status'] === 'expired';
+        $version_status = defined('T9SUITE_VERSION') && T9SUITE_VERSION === '3.4.8' ? 'up-to-date' : 'update-required';
+
+        // Hiển thị thông báo lỗi/thành công
+        settings_errors('t9suite_license');
+
+        // Hiển thị trạng thái
+        $status_text = '';
         switch ($license_data['status']) {
             case 'valid':
                 $status_text = '<span style="color:green;font-weight:bold;">✅ Activated</span>';
@@ -109,51 +112,33 @@ class License_Settings {
             case 'expired':
                 $status_text = '<span style="color:orange;font-weight:bold;">⚠️ Expired</span>';
                 break;
-            case 'wrong_product':
-                $status_text = '<span style="color:red;font-weight:bold;">❌ Wrong Product</span>';
-                break;
             default:
                 $status_text = '<span style="color:red;font-weight:bold;">❌ Not Activated</span>';
                 break;
         }
-    
-        // Days left text
-        $days_left_text = '';
-        if (!empty($license_data['expires_at'])) {
-            $expires_at = strtotime($license_data['expires_at']);
-            $now        = time();
-            $days_left  = floor(($expires_at - $now) / (60 * 60 * 24));
-    
-            if ($days_left > 0) {
-                $days_left_text = sprintf(__('⏳ %d day(s) left until expiration.', 't9suite'), $days_left);
-            } elseif ($days_left === 0) {
-                $days_left_text = __('⚠️ Expires today!', 't9suite');
-            } else {
-                $days_left_text = __('❌ Already expired.', 't9suite');
-            }
-        }
-    
-        settings_errors('t9suite_license');
+
         ?>
         <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-    
             <!-- License Card -->
             <div style="flex:1; min-width:300px; background:#fff; padding:20px; border-radius:10px; border:1px solid #eee;">
                 <h2>🔐 License</h2>
                 <p><strong>Status:</strong> <?php echo $status_text; ?></p>
-    
-                <?php if (!empty($license_data['activated_at'])): ?>
-                    <p><strong>Activated At:</strong> <?php echo esc_html(date('Y-m-d', strtotime($license_data['activated_at']))); ?></p>
+
+                <?php if ($is_valid && !empty($license_data['activated_at'])): ?>
+                    <p><strong>Activated At:</strong> <?php echo date('Y-m-d', strtotime($license_data['activated_at'])); ?></p>
                 <?php endif; ?>
-    
-                <?php if (!empty($license_data['expires_at'])): ?>
-                    <p><strong>Expires At:</strong> <?php echo esc_html(date('Y-m-d', strtotime($license_data['expires_at']))); ?></p>
-                    <p style="color:<?php echo ($days_left_text && $days_left <= 3) ? 'red' : '#0073aa'; ?>">
-                        <?php echo esc_html($days_left_text); ?>
-                    </p>
+
+                <?php if ($is_valid && !empty($license_data['expires_at'])): ?>
+                    <p><strong>Expires At:</strong> <?php echo date('Y-m-d', strtotime($license_data['expires_at'])); ?></p>
+                    <?php
+                    $days_left = (strtotime($license_data['expires_at']) - time()) / (60 * 60 * 24);
+                    if ($days_left > 0) {
+                        echo '<p>' . round($days_left) . ' day(s) left until expiration.</p>';
+                    }
+                    ?>
                 <?php endif; ?>
-    
-                <?php if ($is_valid): ?>
+
+                <?php if ($is_valid && !empty($license_key)): ?>
                     <form method="post">
                         <?php wp_nonce_field('t9suite_save_license', 't9suite_license_nonce'); ?>
                         <input type="hidden" name="license_key" value="">
@@ -167,14 +152,14 @@ class License_Settings {
                     </form>
                 <?php endif; ?>
             </div>
-    
+
             <!-- Version Card -->
             <div style="flex:1; min-width:300px; background:#fff; padding:20px; border-radius:10px; border:1px solid #eee;">
                 <h2>📦 Version</h2>
                 <?php if ($version_status === 'update-required') : ?>
                     <div style="background:#fff3cd; padding:10px; border-radius:5px; border:1px solid #ffeeba;">
                         <strong>Update Required</strong><br>
-                        You are using <code>v<?php echo T9SUITE_VERSION; ?></code>. Please update to <code>v3.4.8</code>.
+                        You are using <code>v<?php echo defined('T9SUITE_VERSION') ? T9SUITE_VERSION : 'unknown'; ?></code>. Please update to <code>v3.4.8</code>.
                     </div>
                 <?php else : ?>
                     <div style="background:#d4edda; padding:10px; border-radius:5px; border:1px solid #c3e6cb;">
@@ -183,13 +168,7 @@ class License_Settings {
                     </div>
                 <?php endif; ?>
             </div>
-    
         </div>
         <?php
     }
-    
-    
-    
-    
-    
 }
