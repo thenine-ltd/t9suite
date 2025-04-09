@@ -221,14 +221,99 @@ class T9Suite_License {
         error_log("🔍 Before activation, timesActivated: {$current_status['timesActivated']}/{$current_status['timesActivatedMax']}");
 
         if ($current_status['timesActivated'] >= $current_status['timesActivatedMax'] && $current_status['timesActivatedMax'] > 0) {
-            error_log("❌ License has reached max activations: {$current_status['timesActivated']}/{$current_status['timesActivatedMax']}");
-            return [
-                'status'  => 'error',
-                'message' => "License has reached maximum activations: {$current_status['timesActivated']}/{$current_status['timesActivatedMax']}."
-            ];
+            // Kiểm tra xem có token cũ nào để reactivate không
+            $activation_history = get_option('t9suite_activation_history', []);
+            $deactivated_token = '';
+
+            foreach ($activation_history as $entry) {
+                if ($entry['license_key'] === $license_key && !empty($entry['deactivated_at'])) {
+                    $deactivated_token = $entry['token'];
+                    break;
+                }
+            }
+
+            if (!empty($deactivated_token)) {
+                error_log("🔍 Found deactivated token for reactivation: {$deactivated_token}");
+                // Gọi /activate với token cũ để reactivate
+                $url = "https://thenine.vn/wp-json/lmfwc/v2/licenses/activate/{$license_key}?token={$deactivated_token}";
+                $response = wp_remote_get($url, [
+                    'headers' => [
+                        'Authorization' => $auth_header,
+                        'Content-Type'  => 'application/json'
+                    ],
+                    'timeout' => 15,
+                ]);
+
+                if (is_wp_error($response)) {
+                    error_log('❌ Reactivation failed: ' . $response->get_error_message());
+                    return [
+                        'status'  => 'error',
+                        'message' => 'Failed to connect to license server: ' . $response->get_error_message()
+                    ];
+                }
+
+                $body = json_decode(wp_remote_retrieve_body($response), true);
+                error_log('🔁 Reactivation response: ' . print_r($body, true));
+
+                if (!empty($body['success']) && empty($body['data']['errors'])) {
+                    $data = $body['data'] ?? [];
+
+                    // Cập nhật token trong option
+                    update_option('t9suite_activation_token', $deactivated_token);
+                    error_log("✅ Reactivation token reused: {$deactivated_token}");
+
+                    // Cập nhật lịch sử: xóa deactivated_at
+                    foreach ($activation_history as &$entry) {
+                        if ($entry['token'] === $deactivated_token) {
+                            unset($entry['deactivated_at']);
+                            $entry['reactivated_at'] = current_time('mysql');
+                            $entry['timesActivated'] = (int) ($data['timesActivated'] ?? 0);
+                            break;
+                        }
+                    }
+                    update_option('t9suite_activation_history', $activation_history);
+                    error_log("📜 Updated token history after reactivation: {$deactivated_token}");
+
+                    // Lưu license key
+                    $saved = update_option('t9suite_license_key', $license_key);
+                    if ($saved) {
+                        error_log("✅ License key saved successfully: {$license_key}");
+                    } else {
+                        error_log("❌ Failed to save license key: {$license_key}");
+                    }
+
+                    delete_transient('t9suite_license_status_data');
+
+                    $status_check = self::check_license_status();
+                    if ($status_check['status'] === 'valid') {
+                        return [
+                            'status'  => 'valid',
+                            'message' => 'License reactivated successfully.'
+                        ];
+                    } else {
+                        return [
+                            'status'  => $status_check['status'],
+                            'message' => $status_check['message']
+                        ];
+                    }
+                } else {
+                    $error_message = $body['data']['errors']['lmfwc_rest_data_error'][0] ?? 'Unknown error.';
+                    error_log('❌ Reactivation error: ' . $error_message);
+                    return [
+                        'status'  => 'error',
+                        'message' => 'Reactivation failed: ' . $error_message
+                    ];
+                }
+            } else {
+                error_log("❌ No deactivated token found for reactivation.");
+                return [
+                    'status'  => 'error',
+                    'message' => "License has reached maximum activations: {$current_status['timesActivated']}/{$current_status['timesActivatedMax']}. No deactivated token available for reactivation."
+                ];
+            }
         }
 
-        // Trường hợp Activate License
+        // Trường hợp Activate License (tạo activation mới)
         $url = "https://thenine.vn/wp-json/lmfwc/v2/licenses/activate/{$license_key}";
         $response = wp_remote_get($url, [
             'headers' => [
