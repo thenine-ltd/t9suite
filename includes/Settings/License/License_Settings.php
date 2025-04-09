@@ -97,6 +97,7 @@ class License_Settings {
         $license_key = get_option('t9suite_license_key', '');
         $license_data = \T9Suite\License\T9Suite_License::check_license_status();
         $is_valid = $license_data['status'] === 'valid';
+        $is_deactivated = $license_data['status'] === 'deactivated';
         $is_expired = $license_data['status'] === 'expired';
         $version_status = defined('T9SUITE_VERSION') && T9SUITE_VERSION === '3.4.8' ? 'up-to-date' : 'update-required';
 
@@ -108,6 +109,9 @@ class License_Settings {
         switch ($license_data['status']) {
             case 'valid':
                 $status_text = '<span style="color:green;font-weight:bold;">✅ Activated</span>';
+                break;
+            case 'deactivated':
+                $status_text = '<span style="color:gray;font-weight:bold;">⏸️ Deactivated</span>';
                 break;
             case 'expired':
                 $status_text = '<span style="color:orange;font-weight:bold;">⚠️ Expired</span>';
@@ -143,6 +147,12 @@ class License_Settings {
                         <?php wp_nonce_field('t9suite_save_license', 't9suite_license_nonce'); ?>
                         <input type="hidden" name="license_key" value="">
                         <?php submit_button(__('Detach License', 't9suite'), 'delete'); ?>
+                    </form>
+                <?php elseif ($is_deactivated && !empty($license_key)): ?>
+                    <form method="post">
+                        <?php wp_nonce_field('t9suite_save_license', 't9suite_license_nonce'); ?>
+                        <input type="hidden" name="license_key" value="<?php echo esc_attr($license_key); ?>">
+                        <?php submit_button(__('Reactivate License', 't9suite'), 'primary'); ?>
                     </form>
                 <?php else: ?>
                     <form method="post">
