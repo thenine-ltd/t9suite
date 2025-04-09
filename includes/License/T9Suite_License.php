@@ -251,23 +251,13 @@ class T9Suite_License {
 
         if (!empty($body['success']) && empty($body['data']['errors'])) {
             $data = $body['data'] ?? [];
-            $activated = (int) ($data['timesActivated'] ?? 0);
-            $max = (int) ($data['timesActivatedMax'] ?? 0);
-
-            if ($max > 0 && $activated >= $max) {
-                error_log("❌ License has reached max activations: {$activated}/{$max}");
-                return [
-                    'status'  => 'error',
-                    'message' => "License has reached maximum activations: {$activated}/{$max}."
-                ];
-            }
 
             // Lưu activation token
             $activation_data = $data['activationData'] ?? [];
             $activation_token = '';
 
             // Xử lý cả hai trường hợp: activationData là object hoặc array
-            if (is_array($activation_data)) {
+            if (is_array($activation_data) && !isset($activation_data['token'])) {
                 // Nếu là array, lấy token từ phần tử cuối cùng (activation mới nhất)
                 $last_activation = end($activation_data);
                 $activation_token = $last_activation['token'] ?? '';
@@ -289,7 +279,7 @@ class T9Suite_License {
                     'token' => $activation_token,
                     'license_key' => $license_key,
                     'activated_at' => current_time('mysql'),
-                    'timesActivated' => $activated
+                    'timesActivated' => (int) ($data['timesActivated'] ?? 0)
                 ];
                 update_option('t9suite_activation_history', $activation_history);
                 error_log("📜 Saved token to history: {$activation_token}");
