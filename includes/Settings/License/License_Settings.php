@@ -30,7 +30,7 @@ class License_Settings {
         ?>
         <div class="wrap" id="t9-license-wrapper">
             <h1 class="wp-heading-inline">🔐 License Management</h1>
-            <div style="display: flex; gap: 30px; margin-top: 20px;">
+            <div style="display: flex; gap: 30 🙂px; margin-top: 20px;">
                 <!-- Sidebar -->
                 <div style="width: 200px; border-right: 1px solid #ddd;">
                     <ul style="list-style: none; padding: 0;">
@@ -96,6 +96,8 @@ class License_Settings {
         // Lấy thông tin
         $license_key = get_option('t9suite_license_key', '');
         $license_data = \T9Suite\License\T9Suite_License::check_license_status();
+        error_log('🔍 Render license card - License data: ' . print_r($license_data, true));
+
         $is_valid = $license_data['status'] === 'valid';
         $is_expired = $license_data['status'] === 'expired';
         $version_status = defined('T9SUITE_VERSION') && T9SUITE_VERSION === '3.4.8' ? 'up-to-date' : 'update-required';
