@@ -186,8 +186,22 @@ class T9Suite_License {
                 $times_activated = (int) ($body['data']['timesActivated'] ?? 0);
                 error_log("🔍 After deactivation, timesActivated: {$times_activated}");
 
+                // Lưu token vào lịch sử trước khi xóa
+                $activation_history = get_option('t9suite_activation_history', []);
+                if (!is_array($activation_history)) {
+                    $activation_history = [];
+                }
+                $activation_history[] = [
+                    'token' => $activation_token,
+                    'license_key' => $stored_key,
+                    'deactivated_at' => current_time('mysql'),
+                    'timesActivated' => $times_activated
+                ];
+                update_option('t9suite_activation_history', $activation_history);
+                error_log("📜 Saved token to history: {$activation_token}");
+
+                // Xóa license key, nhưng không xóa token ngay lập tức
                 delete_option('t9suite_license_key');
-                delete_option('t9suite_activation_token');
                 delete_transient('t9suite_license_status_data');
                 return [
                     'status'  => 'detached',
@@ -235,7 +249,7 @@ class T9Suite_License {
         $body = json_decode(wp_remote_retrieve_body($response), true);
         error_log('🔁 Activation response: ' . print_r($body, true));
 
-        if (!empty($body['success'])) {
+        if (!empty($body['success']) && empty($body['data']['errors'])) {
             $data = $body['data'] ?? [];
             $activated = (int) ($data['timesActivated'] ?? 0);
             $max = (int) ($data['timesActivatedMax'] ?? 0);
@@ -265,11 +279,25 @@ class T9Suite_License {
             if (!empty($activation_token)) {
                 update_option('t9suite_activation_token', $activation_token);
                 error_log("✅ Activation token saved: {$activation_token}");
+
+                // Lưu token vào lịch sử khi activate
+                $activation_history = get_option('t9suite_activation_history', []);
+                if (!is_array($activation_history)) {
+                    $activation_history = [];
+                }
+                $activation_history[] = [
+                    'token' => $activation_token,
+                    'license_key' => $license_key,
+                    'activated_at' => current_time('mysql'),
+                    'timesActivated' => $activated
+                ];
+                update_option('t9suite_activation_history', $activation_history);
+                error_log("📜 Saved token to history: {$activation_token}");
             } else {
                 error_log("❌ No activation token found in response.");
             }
 
-            // Lưu license key và kiểm tra xem có lưu thành công không
+            // Lưu license key chỉ khi activation thành công
             $saved = update_option('t9suite_license_key', $license_key);
             if ($saved) {
                 error_log("✅ License key saved successfully: {$license_key}");
@@ -292,10 +320,11 @@ class T9Suite_License {
                 ];
             }
         } else {
-            error_log('❌ Activation error: ' . ($body['message'] ?? 'Unknown error.'));
+            $error_message = $body['data']['errors']['lmfwc_rest_data_error'][0] ?? 'Unknown error.';
+            error_log('❌ Activation error: ' . $error_message);
             return [
                 'status'  => 'error',
-                'message' => 'Activation failed: ' . ($body['message'] ?? 'Invalid license key.')
+                'message' => 'Activation failed: ' . $error_message
             ];
         }
     }
