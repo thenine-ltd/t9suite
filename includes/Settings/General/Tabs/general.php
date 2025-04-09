@@ -2,6 +2,8 @@
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 settings_fields('t9suite_general_settings');
 ?>
+    <form method="post" action="options.php">
+
 <table class="form-table">
     <!-- Custom Route -->
     <tr>
@@ -107,3 +109,5 @@ settings_fields('t9suite_general_settings');
         </td>
     </tr>
 </table>
+<?php submit_button(); ?>
+            </form>

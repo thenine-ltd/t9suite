@@ -55,8 +55,7 @@ class T9Suite_Init {
         $this->load_active_modules();
 
         // Admin-specific classes.
-        
-            new T9Suite_Settings();
+        new T9Suite_Settings();
         
 
         // Classes loaded on 'init' hook for front-end/back-end compatibility.
