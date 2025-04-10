@@ -6,6 +6,12 @@ jQuery(document).ready(function ($) {
         var target = button.data('target');
         var mediaUploader;
 
+        // Kiểm tra xem wp.media có tồn tại không
+        if (typeof wp.media !== 'function') {
+            console.error('WordPress Media Library is not available.');
+            return;
+        }
+
         // Kiểm tra và khởi tạo media uploader nếu chưa tồn tại
         if (mediaUploader) {
             mediaUploader.open();
