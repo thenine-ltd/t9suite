@@ -35,6 +35,11 @@ if (!defined('T9SUITE_VERSION')) {
     define('T9SUITE_VERSION', '1.0.0');
 }
 
+if (!defined('T9SUITE_PRODUCT_ID')) {
+    define('T9SUITE_PRODUCT_ID', 224583);
+}
+
+
 /**
  * Class Plugin handles plugin initialization and requirements checking.
  */

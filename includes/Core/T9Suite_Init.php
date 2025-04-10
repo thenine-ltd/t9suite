@@ -52,12 +52,11 @@ class T9Suite_Init {
         new T9Suite_Helpers();
         new T9Suite_License();
         new T9Suite_Rewrite();
+        new T9Suite_Updater(); // Khởi tạo class T9Suite_Updater
         $this->load_active_modules();
 
         // Admin-specific classes.
-        
-            new T9Suite_Settings();
-        
+        new T9Suite_Settings();
 
         // Classes loaded on 'init' hook for front-end/back-end compatibility.
         add_action('init', function () {
